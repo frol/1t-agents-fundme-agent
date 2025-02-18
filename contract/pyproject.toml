@@ -1,0 +1,38 @@
+[project]
+name = "contract"
+version = "0.1.0"
+description = "A simple NEAR contract in Python"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
+
+[tool.near-py-tool]
+exclude-micropython-stdlib-packages = [
+    "os-path",
+    "pprint",
+    "stat",
+    "tempfile",
+    "html",
+    "locale",
+    "pathlib",
+    "quopri",
+    "textwrap",
+    "unittest",
+    "zlib",
+    "cmd",
+    "curses.ascii",
+    "gzip",
+    "logging",
+    "pickle",
+    "threading",
+    "unittest-discover",
+    "pkg_resources",
+    "shutil",
+    "tarfile",
+    "uu",
+    "errno",
+    "os",
+    "pkgutil",
+    "ssl",
+    "tarfile-write",
+]
