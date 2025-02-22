@@ -1,6 +1,6 @@
 {
   "name": "1t-agents-fundme",
-  "version": "0.0.9",
+  "version": "0.0.12",
   "description": "We hear you, hackers! To reduce your friction trying out all NEAR capabilities, we are happy to send you NEAR tokens from our NEAR AI agent. Talk to the agent and claim 2 NEAR right away!",
   "category": "agent",
   "tags": [],

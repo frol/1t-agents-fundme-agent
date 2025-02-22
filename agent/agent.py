@@ -1,17 +1,18 @@
 import asyncio
 import json
+import re
 import requests
 from nearai.agents.environment import Environment
 
 PROMPT = {
     "role": "system",
-    "content": "Analyze the user input and extract the devpost profile link. If it is provided, write 'Developer details:' and the devpost link on the individual lines. Do not write anything else.",
+    "content": "Analyze the user input and extract the devpost profile link. If it is provided, write the devpost link, otherwise write 'no devpost link'.",
 }
 
 
 def run(env: Environment):
-    result = env.completion([PROMPT] + env.list_messages())
-    if "Developer details:" not in result:
+    devpost_profile_link = env.completion([PROMPT] + env.list_messages())
+    if "no devpost link" in devpost_profile_link.lower():
         env.add_reply(
             """Howdy! If you are a One Trillon Agents Hackathon participant, we have great news for you! You can receive 2 NEAR now.
 
@@ -20,8 +21,7 @@ def run(env: Environment):
         )
         return
 
-    _, devpost_profile_link = result.split("\n")
-
+    env.add_agent_log(f"completion: {devpost_profile_link}")
     if not devpost_profile_link.startswith("https://devpost.com/"):
         env.add_reply("The provided link is not a DevPost profile link.")
         return
@@ -64,8 +64,9 @@ def run(env: Environment):
         )
         return
 
+    DEVPOST_PROFILE_BIO_START_MARKER = '<p class="large" id="portfolio-user-bio">'
     devpost_profile_bio_start = devpost_profile_html.find(
-        '<p class="large" id="portfolio-user-bio">'
+        DEVPOST_PROFILE_BIO_START_MARKER
     )
     if devpost_profile_bio_start == -1:
         env.add_reply(
@@ -77,44 +78,18 @@ def run(env: Environment):
     )
     devpost_profile_bio = devpost_profile_html[
         devpost_profile_bio_start
-        + len('<p class="large" id="portfolio-user-bio">') : devpost_profile_bio_end
-    ]
-    target_account_id = env.completion(
-        [
-            {
-                "role": "system",
-                "content": "Analyze the user text and extract their NEAR account id. Do not write anything else. If there is no account id, do not write anything.",
-            },
-            {
-                "role": "user",
-                "content": devpost_profile_bio,
-            },
-        ]
+        + len(DEVPOST_PROFILE_BIO_START_MARKER) : devpost_profile_bio_end
+    ].lower()
+    target_account_id_re = re.search(
+        r"receive 2 near to my account:\s*((([a-z\d]+[\-_])*[a-z\d]+\.)*([a-z\d]+[\-_])*[a-z\d]+)",
+        devpost_profile_bio,
     )
-    if not target_account_id.trim():
+    if not target_account_id_re:
         env.add_reply(
             "The provided DevPost profile bio does not contain your NEAR account id. Please, add it to your bio as: 'I would like to receive 2 NEAR to my account: <your NEAR account id>'"
         )
         return
-
-    env.add_reply(
-        f"Is `{target_account_id}` the NEAR account you want to receive 2 NEAR to?"
-    )
-    env.request_user_input()
-    confirmation = env.completion(
-        [
-            {
-                "role": "system",
-                "content": "Analyze if user confirmed that it is their account. Only write 'yes' or 'no'.",
-            },
-            env.get_last_message(),
-        ]
-    )
-    if confirmation.lower() != "yes":
-        env.add_reply(
-            "Please provide your NEAR account id in your DevPost profile bio."
-        )
-        return
+    target_account_id = target_account_id_re.group(1)
 
     result = asyncio.run(
         faucet_account.call(
@@ -131,8 +106,6 @@ def run(env: Environment):
 
 
 try:
-    for _ in range(10):
-        run(env)
-        env.request_user_input()
+    run(env)
 except Exception as err:
     env.add_reply(f"Oops. Something went wrong: {err}")
