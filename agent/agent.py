@@ -3,34 +3,37 @@ import json
 import re
 import requests
 from nearai.agents.environment import Environment
+import profiles
 
 PROMPT = {
     "role": "system",
-    "content": "Analyze the user input and extract the devpost profile link. If it is provided, write the devpost link, otherwise write 'no devpost link'.",
+    "content": "Analyze the user input and extract the devpost profile link. If it is provided, write only the devpost link, otherwise write 'no devpost link'. Do not write anything else at all.",
 }
 
+INSTRUCTIONS = """Howdy! If you are a One Trillon Agents Hackathon participant, we have great news for you! You can receive 2 NEAR now.
+
+1. Update your DevPost profile:
+1.1. Add the near.ai skill tag
+1.2. Add the following message to your bio: "I am building NEAR AI agents. Hey NEAR AI, I would like to receive 2 NEAR to my account: <your NEAR account id>"\n\
+2. Share your your DevPost profile link with me here
+"""
 
 def run(env: Environment):
     devpost_profile_link = env.completion([PROMPT] + env.list_messages())
     if "no devpost link" in devpost_profile_link.lower():
-        env.add_reply(
-            """Howdy! If you are a One Trillon Agents Hackathon participant, we have great news for you! You can receive 2 NEAR now.
-
-            1. Update your DevPost profile with the near.ai skill tag and put the following message in your bio: "I would like to receive 2 NEAR to my account: <your NEAR account id>"
-            2. Share your your DevPost profile link with me here"""
-        )
+        env.add_reply(INSTRUCTIONS)
         return
 
-    env.add_agent_log(f"completion: {devpost_profile_link}")
-    if not devpost_profile_link.startswith("https://devpost.com/"):
+    devpost_profile_username_re = re.search("https://devpost.com/([^?]+)", devpost_profile_link)
+    if not devpost_profile_username_re:
         env.add_reply("The provided link is not a DevPost profile link.")
         return
 
-    devpost_profile_username = devpost_profile_link[len("https://devpost.com/") :]
+    devpost_profile_username = devpost_profile_username_re.group(1)
 
     # TODO: Check if the user is a participant of the One Trillon Agents Hackathon
-    if devpost_profile_username not in ["frolvlad", "frolvlad1"]:
-        env.add_reply("You are not a participant of the One Trillon Agents Hackathon.")
+    if devpost_profile_username not in profiles.REGISTERRED_PARTICIPANTS:
+        env.add_reply("You were not a participant of the One Trillon Agents Hackathon at the cut-off date (February 18th, 2025, when https://www.youtube.com/watch?v=BguBWnc2AHg was recorded). To prevent multiple claims we don't allow newly-registered participants to claim NEAR tokens.")
         return
 
     faucet_account_id = env.env_vars.get(
@@ -45,7 +48,7 @@ def run(env: Environment):
             "get_funded_profile_details",
             args={"devpost_profile_username": devpost_profile_username},
         )
-    ):
+    ).result:
         env.add_reply(
             "You already received the funds. Thank you for participating in the One Trillon Agents Hackathon!"
         )
@@ -54,7 +57,7 @@ def run(env: Environment):
     devpost_profile_html = requests.get(devpost_profile_link).text
     if "software portfolio | Devpost</title>" not in devpost_profile_html:
         env.add_reply(
-            "The provided link is not a DevPost profile link. It looks like this https://devpost.com/frolvlad"
+            "The provided link is not a DevPost profile link. The correct DevPost profile link looks like this https://devpost.com/frolvlad"
         )
         return
 
@@ -70,7 +73,7 @@ def run(env: Environment):
     )
     if devpost_profile_bio_start == -1:
         env.add_reply(
-            "The provided DevPost profile does not have a bio. Please add it to your profile: 'I would like to receive 2 NEAR to my account: <your NEAR account id>'"
+            "The provided DevPost profile does not have a bio. Please add it to your profile: 'I am building NEAR AI agents. Hey NEAR AI, I would like to receive 2 NEAR to my account: <your NEAR account id>'"
         )
         return
     devpost_profile_bio_end = devpost_profile_html.find(
@@ -86,7 +89,7 @@ def run(env: Environment):
     )
     if not target_account_id_re:
         env.add_reply(
-            "The provided DevPost profile bio does not contain your NEAR account id. Please, add it to your bio as: 'I would like to receive 2 NEAR to my account: <your NEAR account id>'"
+            "The provided DevPost profile bio does not contain your NEAR account id. Please, add it to your bio as: 'I am building NEAR AI agents. Hey NEAR AI, I would like to receive 2 NEAR to my account: <your NEAR account id>'"
         )
         return
     target_account_id = target_account_id_re.group(1)
@@ -102,10 +105,13 @@ def run(env: Environment):
         )
     )
 
-    env.add_reply(f"You were funded! {json.dumps(result)}")
+    if "SuccessValue" not in result.status:
+        env.add_reply(f"Failed to fund: {json.dumps(result.status)}")
+        return
+    env.add_reply(f"You were funded! https://nearblocks.io/address/{target_account_id}?tab=receipts\n\nLet's hack [together](https://www.youtube.com/@NEARDevHub/streams)!")
 
 
 try:
     run(env)
 except Exception as err:
-    env.add_reply(f"Oops. Something went wrong: {err}")
+    env.add_reply(f"Oops. Something went wrong: {err}\n\nTry asking to 'retry' or recreate the chat thread.")
