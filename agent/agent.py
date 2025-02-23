@@ -13,8 +13,8 @@ PROMPT = {
 INSTRUCTIONS = """Howdy! If you are a One Trillon Agents Hackathon participant, we have great news for you! You can receive 2 NEAR now.
 
 1. Update your DevPost profile:
-1.1. Add the near.ai skill tag
-1.2. Add the following message to your bio: "I am building NEAR AI agents. Hey NEAR AI, I would like to receive 2 NEAR to my account: <your NEAR account id>"\n\
+   * Add the near.ai skill tag
+   * Add the following message to your bio: "I am building NEAR AI agents. Hey NEAR AI, I would like to receive 2 NEAR to my account: <your NEAR account id>"\n\
 2. Share your your DevPost profile link with me here
 """
 
