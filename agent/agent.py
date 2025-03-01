@@ -2,6 +2,7 @@ import asyncio
 import json
 import re
 import requests
+from urllib.parse import urlparse
 from nearai.agents.environment import Environment
 import profiles
 
@@ -18,20 +19,20 @@ INSTRUCTIONS = """Howdy! If you are a One Trillon Agents Hackathon participant, 
 2. Share your your DevPost profile link with me here
 """
 
+DEVPOST_LINK = "https://devpost.com/"
+
 def run(env: Environment):
     devpost_profile_link = env.completion([PROMPT] + env.list_messages())
     if "no devpost link" in devpost_profile_link.lower():
         env.add_reply(INSTRUCTIONS)
         return
 
-    devpost_profile_username_re = re.search("https://devpost.com/([^?]+)", devpost_profile_link)
-    if not devpost_profile_username_re:
+    if not devpost_profile_link.startswith(DEVPOST_LINK):
         env.add_reply("The provided link is not a DevPost profile link.")
         return
 
-    devpost_profile_username = devpost_profile_username_re.group(1)
+    devpost_profile_username = urlparse(devpost_profile_link).path.split("/")[1]
 
-    # TODO: Check if the user is a participant of the One Trillon Agents Hackathon
     if devpost_profile_username not in profiles.REGISTERRED_PARTICIPANTS:
         env.add_reply("You were not a participant of the One Trillon Agents Hackathon at the cut-off date (February 18th, 2025, when https://www.youtube.com/watch?v=BguBWnc2AHg was recorded). To prevent multiple claims we don't allow newly-registered participants to claim NEAR tokens.")
         return
