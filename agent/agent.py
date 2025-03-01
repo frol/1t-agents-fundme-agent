@@ -41,7 +41,7 @@ def run(env: Environment):
         "FAUCET_ACCOUNT_ID", "1t-agents-fund.frol.near"
     )
     faucet_account = env.set_near(
-        faucet_account_id, env.env_vars["FAUCET_PRIVATE_ACCESS_KEY"]
+        faucet_account_id, env.env_vars["FAUCET_PRIVATE_ACCESS_KEY_2"]
     )
     if asyncio.run(
         faucet_account.view(
