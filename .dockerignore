@@ -1,0 +1,121 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+ENV
+env.bak
+venv.bak
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+.pytest_cache
+.mypy_cache
+.ruff_cache
+dist
+build
+*.egg-info/
+.ipynb_checkpoints
+.pytest_cache
+.vscode/
+.idea/
+
+# Node.js
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnp
+.pnp.js
+.parcel-cache
+.next
+.nuxt
+.vuepress/dist
+.serverless
+.fusebox
+.temp
+
+# Ruby
+.bundle
+vendor/bundle
+.rake_tasks
+.sass-cache
+.byebug_history
+.rspec
+.rubocop_todo.yml
+.yardoc
+.gem
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+build/
+.gradle
+.project
+.classpath
+.settings
+bin/
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.test
+vendor/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*.swp
+
+# Logs and temporary files
+*.log
+*.tmp
+tmp/
+temp/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+*.iml
+
+# Environment variables
+.env
+.env.*
+*.env
+*.env.*
+
+# Other common exclusions
+coverage/
+debug/

@@ -1,0 +1,10 @@
+stdin: true
+name: AgentDrop
+summary: Welcome! Get NEAR tokens from me, AgentDrop built by One Trillion Agents team. We hope these tokens will help you to explore NEAR universe without friction! Chat with me to learn more about how to claim the tokens.
+environment_variables:
+  - name: FAUCET_ACCOUNT_ID
+    value: 1t-agents-fund.frol.near
+    description: The NEAR account ID of the faucet contract.
+  - name: FAUCET_PRIVATE_ACCESS_KEY_2
+    value: <your_faucet_private_access_key_2>
+    description: The private access key for the faucet account, used to sign NEAR transactions. This variable is mandatory.
